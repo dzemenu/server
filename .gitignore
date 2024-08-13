@@ -1,0 +1,27 @@
+# Node.js dependencies
+node_modules/
+
+# Compiled output (e.g., TypeScript, Babel)
+dist/
+build/
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Temporary files and IDE files
+*.tmp
+*.swp
+.vscode/
+.idea/
+
+# Ignore all .env files except .env.example
+.env
+!.env.example
