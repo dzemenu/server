@@ -1,8 +1,10 @@
 const Package = require('../model/package.model');
+const Delivery = require('../model/delivery.model');
+const WebSocket = require('ws');
+
 const createPackage = async (req, res) => {
     try {
         const { description, weight, width, height, depth, from_name, from_address, from_location, to_name, to_address, to_location } = req.body;
-        console.log("first", req.body)
         const newPackage = new Package({
             description, weight, width, height, depth, from_name, from_address, from_location, to_name, to_address, to_location
         });
@@ -13,8 +15,8 @@ const createPackage = async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
+};
 
-}
 const getPackages = async (req, res) => {
     try {
         const packages = await Package.find();
@@ -23,23 +25,38 @@ const getPackages = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
 const getPackage = async (req, res) => {
     try {
         const { package_id } = req.params;
-        const package = await Package.findOne({ package_id }).populate('active_delivery_id')
-        console.log(":dillu");
-        res.status(200).json(package);
+        const package = await Package.findOne({ package_id }).populate('active_delivery_id');
+
+        if (!package) {
+            return res.status(404).json({ message: 'Package not found' });
+        }
+
+        // If the package has an active delivery, fetch the delivery details
+        let delivery = null;
+        if (package.active_delivery_id) {
+            delivery = await Delivery.findOne({ delivery_id: package.active_delivery_id });
+        }
+
+        res.status(200).json({ package, delivery });
     }
     catch (err) {
         res.status(500).json({ message: err.message });
     }
+};
 
-}
 const updatePackage = async (req, res) => {
     try {
         const { package_id } = req.params;
         const { description, weight, width, height, depth, from_name, from_address, from_location, to_name, to_address, to_location, active_delivery_id } = req.body;
         const package = await Package.findOne({ package_id });
+
+        if (!package) {
+            return res.status(404).json({ message: 'Package not found' });
+        }
 
         package.description = description;
         package.weight = weight;
@@ -59,7 +76,8 @@ const updatePackage = async (req, res) => {
     catch (err) {
         res.status(500).json({ message: err.message });
     }
-}
+};
+
 const deletePackage = async (req, res) => {
     try {
         const { package_id } = req.params;
@@ -69,6 +87,33 @@ const deletePackage = async (req, res) => {
     catch (err) {
         res.status(500).json({ message: err.message });
     }
-}
+};
 
-module.exports = { createPackage, getPackages, getPackage, updatePackage, deletePackage };
+// WebSocket setup for real-time delivery updates
+ const setupWebSocket = (server) => {
+    const wss = new WebSocket.Server({ server });
+
+    wss.on('connection', (ws, req) => {
+        const package_id = req.url.split('/').pop();  // Assuming the package_id is in the URL
+
+        ws.on('message', async (message) => {
+            console.log(`Received message: ${message} from package ID: ${package_id}`);
+            const package = await Package.findOne({ package_id }).populate('active_delivery_id');
+
+            if (package && package.active_delivery_id) {
+                const delivery = await Delivery.findOne({ delivery_id: package.active_delivery_id });
+                ws.send(JSON.stringify({ package, delivery }));
+            } else {
+                ws.send(JSON.stringify({ message: 'No active delivery found' }));
+            }
+        });
+
+        ws.on('close', () => {
+            console.log(`Connection closed for package ID: ${package_id}`);
+        });
+    });
+
+    console.log('WebSocket server started');
+};
+
+module.exports = { createPackage, getPackages, getPackage, updatePackage, deletePackage, setupWebSocket };

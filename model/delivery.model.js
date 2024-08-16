@@ -24,19 +24,19 @@ const deliverySchema = new mongoose.Schema({
     },
     pickup_time: {
         type: Date,
-        required: true
+
     },
     start_time: {
         type: Date,
-        required: true
+
     },
     end_time: {
         type: Date,
-        required: true
+
     },
     location: {
         type: locationSchema,
-        required: true
+
     },
     status: {
         type: String,
