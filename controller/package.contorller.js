@@ -1,16 +1,17 @@
 const Package = require('../model/package.model');
 const createPackage = async (req, res) => {
     try {
-        const { package_id, description, weight, width, height, depth, from_name, from_address, from_location, to_name, to_address, to_location, active_delivery_id } = req.body;
+        const { description, weight, width, height, depth, from_name, from_address, from_location, to_name, to_address, to_location } = req.body;
+        console.log("first", req.body)
         const newPackage = new Package({
-            package_id, description, weight, width, height, depth, from_name, from_address, from_location, to_name, to_address, to_location, active_delivery_id
+            description, weight, width, height, depth, from_name, from_address, from_location, to_name, to_address, to_location
         });
         const result = await newPackage.save();
         if (result) {
             return res.send(result);
         }
     } catch (err) {
-        res.status * (500).json({ message: err.message });
+        res.status(500).json({ message: err.message });
     }
 
 }

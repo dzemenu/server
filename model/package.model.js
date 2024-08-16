@@ -22,6 +22,8 @@ const packageSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Delivery',
         required: true,
+        default: () => new mongoose.Types.ObjectId().toString()
+
     },
     description: {
         type: String,
@@ -67,7 +69,7 @@ const packageSchema = new mongoose.Schema({
         type: locationSchema,
         required: true
     }
-}, { _id: false }); // Disable default _id field
+}); // Disable default _id field
 
 const Package = mongoose.model('Package', packageSchema);
 

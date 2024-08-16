@@ -44,8 +44,7 @@ const deliverySchema = new mongoose.Schema({
         required: true,
         default: 'open'
     }
-}, { _id: false }); // Disable default _id field
-
+})
 const Delivery = mongoose.model('Delivery', deliverySchema);
 
 module.exports = Delivery
