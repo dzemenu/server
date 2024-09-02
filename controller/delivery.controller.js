@@ -1,4 +1,5 @@
 const Delivery = require('../model/delivery.model');
+const jwt = require('jsonwebtoken')
 
 const createDelivery = async (req, res) => {
     try {
@@ -13,6 +14,7 @@ const createDelivery = async (req, res) => {
     }
 }
 const getDelivery = async (req, res) => {
+
     try {
         const { delivery_id } = req.params;
         const delivery = await Delivery.findOne({ delivery_id });
@@ -22,6 +24,11 @@ const getDelivery = async (req, res) => {
     }
 }
 const getDeliveries = async (req, res) => {
+    const cookie = req.cookies.token;
+    const claims = jwt.verify(cookie, process.env.SECRET);
+    if (!claims) {
+        return res.sendStatus(401);
+    }
     try {
         const deliveries = await Delivery.find();
         res.status(200).json(deliveries);
